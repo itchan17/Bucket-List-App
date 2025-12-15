@@ -1,0 +1,81 @@
+library(shiny)
+
+modalFormUI <- function() {
+  div(
+    id = "customModal",
+    class = "modal-overlay",
+    onclick = "if(event.target === this) closeModal()",
+    
+    div(
+      class = "bg-white rounded-lg shadow-[4px_4px_0px_8px_rgba(0,_0,_0,_0.8)] p-8 max-w-md w-full mx-4",
+      
+      # Modal Header
+      div(
+        class = "flex justify-between items-center mb-6",
+        h2("Add New Goal", class = "text-3xl font-bold"),
+        tags$button(
+          "×",
+          onclick = "closeModal()",
+          class = "text-4xl font-bold hover:text-gray-600 leading-none"
+        )
+      ),
+      
+      # Modal Body
+      div(
+        class = "space-y-4 mb-6",
+        textInput("goal_name", NULL, placeholder = "Goal name", width = "100%"),
+        textAreaInput("goal_desc", NULL, placeholder = "Description", width = "100%", rows = 4)
+      ),
+      
+      # Modal Footer
+      div(
+        class = "flex gap-4 justify-end",
+        tags$button(
+          "Cancel",
+          onclick = "closeModal()",
+          class = "px-6 py-2 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]"
+        ),
+        actionButton(
+          "save_goal",
+          "Save Goal",
+          class = "px-6 py-2 bg-green-500 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]"
+        )
+      )
+    )
+  )
+}
+
+# Modal JavaScript
+modalFormJS <- function() {
+  tags$script(HTML("
+    function openModal() {
+      document.getElementById('customModal').classList.add('active');
+    }
+    
+    function closeModal() {
+      document.getElementById('customModal').classList.remove('active');
+    }
+  "))
+}
+
+# Modal CSS
+modalFormCSS <- function() {
+  tags$style(HTML("
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+  "))
+}
+
