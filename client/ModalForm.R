@@ -1,10 +1,11 @@
 library(shiny)
 
-modalFormUI <- function() {
+modalFormUI <- function(id) {
+  ns <- NS(id) 
   div(
     id = "customModal",
-    class = "fixed z-[1000] w-full h-full top-0 left-0 bg-black/50 flex hidden justify-center items-center",
-    onclick = "if(event.target === this) closeModal()",
+    class = "fixed z-[1000] w-full h-full top-0 left-0 bg-black/50 flex justify-center items-center 
+    opacity-0 invisible transition-all duration-300",
     
     div(
       class = "rounded-lg shadow-[4px_4px_0px_8px_rgba(0,_0,_0,_0.8)] p-8 max-w-[700px] w-full mx-4 bg-[#FCF6D9]",
@@ -24,27 +25,27 @@ modalFormUI <- function() {
       div(
         class = "space-y-5 mb-6",
         div(
-         tags$label("Goal title", `for` = "goal_name", class = "font-bold mb-2"),
-         tags$input(
-           type = "text",
-           id = "goal_name",
-           class = "w-full border border-black px-4 py-2 rounded h-16  text-2xl bg-[#FCF6D9]",
-         )
+          tags$label("Goal title", `for` = "goal_title", class = "font-bold mb-2"),
+          tags$input(
+            type = "text",
+            id = ns("goal_title"),
+            class = "w-full border border-black px-4 py-2 rounded h-16  text-2xl bg-[#FCF6D9]",
+          )
         ),
         
         div(
           class = "mb-4",
           tags$label("Category", `for` = "goal_category", class = "font-bold mb-2"),
           tags$select(
-            id = "goal_category",
+            id = ns("goal_category"),
             class = "w-full border border-black px-4 py-2 rounded h-16 cursor-pointer bg-[#FCF6D9]",
             tags$option(value = "", "Select a category..."),
-            tags$option(value = "travel", "Travel Goals"),
-            tags$option(value = "career", "Career Goals"),
-            tags$option(value = "health", "Health Goals"),
-            tags$option(value = "learning", "Learning Goals"),
-            tags$option(value = "personal", "Personal Development"),
-            tags$option(value = "relationship", "Relationship Goals")
+            tags$option(value = "Travel Goals", "Travel Goals"),
+            tags$option(value = "Career Goals", "Career Goals"),
+            tags$option(value = "Health Goals", "Health Goals"),
+            tags$option(value = "Learning Goals", "Learning Goals"),
+            tags$option(value = "Personal Development", "Personal Development"),
+            tags$option(value = "Relationship Goals", "Relationship Goals")
           )
         ),
         
@@ -55,15 +56,11 @@ modalFormUI <- function() {
             tags$label("Add steps", `for` = "goal_name", class = "font-bold mb-2"),
             tags$input(
               type = "text",
-              id = "goal_name",
+              id = ns("goal_step"),
               class = "w-full border border-black px-4 py-2 rounded h-16  text-2xl bg-[#FCF6D9]",
             )
           ),
-          tags$button(
-            "Add",
-            class = "px-6 py-2 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)] h-16
-            active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]"
-          ),
+          uiOutput(ns("add_step_button"))
         ),
         
         div(
@@ -71,36 +68,27 @@ modalFormUI <- function() {
           div(
             class = "shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded-lg p-5 flex-1 flex flex-col overflow-y-auto h-60 overflow-y-auto",
             
-            div(
-              class = "px-6 py-4 cursor-pointer hover:bg-[#DDBA7D] transform-all duration-300 
-              active:scale-95 rounded flex justify-between",
-              span(
-                "Step 1",
-                class = "text-3xl "
-              ),
-              div(
-                class = "flex gap-5",
-                icon("fa-solid fa-pen-to-square", class = "text-[#CF4B00] text-4xl"),
-                icon("fa-solid fa-x", class = "text-[#CF4B00] text-4xl"),
-              )
-            )
+            # Steps here
+            uiOutput(ns("current_steps"))
           )
         ),
         
-        h1("Difficulty: Epic Achievements", class = "text-3xl font-bold mb-4" ),
+       # Difficulty
+       uiOutput(ns("difficulty_label"))
       ),
       
       # Modal Footer
       div(
         class = "flex gap-4 justify-end",
-        tags$button(
+        actionButton(
+          ns("cancel_goal"),
           "Cancel",
           onclick = "closeModal()",
           class = "px-6 py-2 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]
           active:scale-95 transition-all duration-150"
         ),
         actionButton(
-          "save_goal",
+          ns("save_goal"),
           "Save Goal",
           class = "px-6 py-2 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]
           active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]"
@@ -115,14 +103,17 @@ modalFormJS <- function() {
   tags$script(HTML("
     function openModal() {
       const modal = document.getElementById('customModal');
-      modal.classList.remove('hidden')
-      modal.classList.add('flex')
+      modal.classList.remove('invisible', 'opacity-0');
+      modal.classList.add('opacity-100');
     }
     
     function closeModal() {
       const modal = document.getElementById('customModal');
-      modal.classList.remove('flex')
-      modal.classList.add('hidden')
+      modal.classList.remove('opacity-100');
+      modal.classList.add('invisible', 'opacity-0');
+      
+      // Use single quotes for 'event' instead of double quotes
+      Shiny.setInputValue('goalModal-modal_closed', true, {priority: 'event'});
     }
   "))
 }
