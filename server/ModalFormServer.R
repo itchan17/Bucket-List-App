@@ -1,4 +1,4 @@
-modalFormServer <- function(id, conn) {
+modalFormServer <- function(id, conn, refresh) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -156,7 +156,7 @@ modalFormServer <- function(id, conn) {
       }
       
       tryCatch({
-        goal_id <- insert_goal(conn, goal_title, goal_title, difficulty())
+        goal_id <- insert_goal(conn, goal_title, goal_category, difficulty())
         insert_steps(conn, goal_id, steps())
         
         # Clear inputs
@@ -164,44 +164,16 @@ modalFormServer <- function(id, conn) {
         
         # Close the modal
         runjs("closeModal();")
+        refresh()
         
       }, error = function(e) {
         showNotification(paste("Error saving goal:", e$message), type = "error")
       })
     })
     
-    # Handles  query for inserting goals in table
-    insert_goal<- function(conn, title, category, difficulty)  {
-      query <- "
-        INSERT INTO goals(title, category, difficulty)
-        VALUES ($1, $2, $3)
-        RETURNING goal_id
-      "
-      
-      result <- dbGetQuery(conn, query, params = list(
-        title,
-        category,
-        difficulty
-      ))
-      
-      return(result$goal_id)
-    }
     
-    # handle query for inserting stepps  in table
-    insert_steps <- function (conn, goal_id,  steps) {
-      if(length(steps) == 0) return()
-      
-      query <- "
-        INSERT INTO steps (goal_id, title)
-        VALUES ($1, $2)
-      "
-      for (step in steps){
-        dbExecute(conn, query, params = list(
-          goal_id,
-          step
-        ))
-      }
-    }
+    
+   
     
     
   })

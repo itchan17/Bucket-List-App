@@ -4,7 +4,9 @@ library(shinyjs)
 source("client/ModalForm.R")
 source("client/MainLayout.R")
 source("server/database.R")
+source("server/db_queries.R")
 source("server/ModalFormServer.R")
+source("server/GoalDisplay.R")
 
 options(shiny.autoreload = TRUE)
 
@@ -13,6 +15,7 @@ conn <- create_connection()
 # Define UI for application 
 ui <- fillPage(
     theme = NULL,
+    
     useShinyjs(),  
     
     tags$head(
@@ -23,17 +26,20 @@ ui <- fillPage(
       modalFormJS()
     ),
     
-    mainLayout(),
+    mainLayout(list_goals = goalDisplayUI("goalDisplay"),
+               display_details = goalDetailsDisplay("goalDisplay")
+               ),
     
-    # Form for creating data
-    modalFormUI("goalModal"),
-  
-
+    modalFormUI("goalModal")
 )
 
 server <- function(input, output, session) {
+  
   # Handle create data in server
-  modalFormServer("goalModal", conn)
+  modalFormServer("goalModal", conn, refresh = refresh)
+  
+  # Displays data in the UI
+  goalDisplayServer("goalDisplay", conn)
 }
 
 # Run the application 
