@@ -35,11 +35,9 @@ ui <- fillPage(
 
 server <- function(input, output, session) {
   
-  # Handle create data in server
-  modalFormServer("goalModal", conn, refresh = refresh)
+  modal_functions <- modalFormServer("goalModal", conn, refresh = goal_functions$refresh)
   
-  # Displays data in the UI
-  goalDisplayServer("goalDisplay", conn)
+  goal_functions <- goalDisplayServer("goalDisplay", conn, edit_callback = modal_functions$load_goal)
 }
 
 # Run the application 

@@ -14,11 +14,6 @@ modalFormUI <- function(id) {
       div(
         class = "flex justify-between items-center mb-6",
         h2("Add New Goal", class = "text-3xl font-bold"),
-        tags$button(
-          "×",
-          onclick = "closeModal()",
-          class = "text-4xl font-bold hover:text-gray-600 leading-none"
-        )
       ),
       
       # Modal Body
@@ -83,7 +78,6 @@ modalFormUI <- function(id) {
         actionButton(
           ns("cancel_goal"),
           "Cancel",
-          onclick = "closeModal()",
           class = "px-6 py-2 border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]
           active:scale-95 transition-all duration-150"
         ),

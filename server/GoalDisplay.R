@@ -16,7 +16,7 @@ goalDetailsDisplay <- function(id) {
 }
 
 # Backend logic for displaying data
-goalDisplayServer <- function(id, conn) {
+goalDisplayServer <- function(id, conn, edit_callback = NULL) {
   moduleServer(id, function(input, output, session) {
     
     # Used to refresh  the goals data
@@ -54,6 +54,18 @@ goalDisplayServer <- function(id, conn) {
             row$goal_id 
           )
           
+          edit_goal <- sprintf(
+            "event.stopPropagation(); openModal(); Shiny.setInputValue('%s', %d, {priority: 'event'})", 
+            ns("edit_goal"), 
+            row$goal_id 
+          )
+          
+          delete_goal <- sprintf(
+            "event.stopPropagation(); Shiny.setInputValue('%s', %d, {priority: 'event'})", 
+            ns("delete_goal"), 
+            row$goal_id 
+          )
+          
           div(
             onclick = click_goal,
             class = "px-6 py-4 cursor-pointer hover:bg-[#DDBA7D] transform-all duration-300 
@@ -64,8 +76,18 @@ goalDisplayServer <- function(id, conn) {
             ),
             div(
               class = "flex gap-5",
-              icon("fa-solid fa-pen-to-square", class = "text-[#CF4B00] text-4xl"),
-              icon("fa-solid fa-x", class = "text-[#CF4B00] text-4xl"),
+              # Edit button
+              tags$button(
+                icon("fa-solid fa-pen-to-square", class = "text-[#CF4B00] text-4xl"),
+                class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
+                onclick = edit_goal
+              ),
+              # Delete button
+              tags$button(
+                icon("fa-solid fa-x", class = "text-[#CF4B00] text-4xl"),
+                class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
+                onclick = delete_goal
+              )
             )
           )
         })
@@ -83,7 +105,7 @@ goalDisplayServer <- function(id, conn) {
     output$display_goal_details <- renderUI({
       
       # Check if there's selected goals
-      # If none set the daata to display to empty
+      # If none set the data to display to empty
       if(is.null(selectedGoalId())){
         category  <- ""
         difficulty  <- ""
@@ -91,7 +113,7 @@ goalDisplayServer <- function(id, conn) {
         steps      <- data.frame()
       } else {
         
-        # Get the goal data from teh existing data
+        # Get the goal data from the existing data
         goalData <- goals_data()[goals_data()$goal_id == selectedGoalId(), ]
         
         category  <- goalData$category
@@ -155,11 +177,22 @@ goalDisplayServer <- function(id, conn) {
         )
     })
     
-    return(
-      # Used to re trigger fetching the data
-      refresh <- function() {
-        refresh_trigger(refresh_trigger() + 1)
+    
+    observeEvent(input$edit_goal, {
+      print(paste("Edit goal clicked:", input$edit_goal))
+      
+      if (!is.null(edit_callback)) {
+        edit_callback(input$edit_goal)
       }
+    })
+    refresh <- function() {
+      refresh_trigger(refresh_trigger() + 1)
+    }
+    
+    return(list(
+      refresh = refresh
+    )
+     
     )
     
   })
