@@ -101,3 +101,9 @@ delete_single_step <- function(conn, step_id) {
   
   dbExecute(conn, query, params = list(step_id))
 }
+
+delete_goal <- function(conn, goal_id) {
+  query <- "DELETE FROM goals WHERE goal_id = $1"
+  
+  dbExecute(conn, query, params = list(goal_id))
+}

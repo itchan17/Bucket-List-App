@@ -19,6 +19,8 @@ goalDetailsDisplay <- function(id) {
 goalDisplayServer <- function(id, conn, edit_callback = NULL) {
   moduleServer(id, function(input, output, session) {
     
+    ns <- session$ns
+    
     # Used to refresh  the goals data
     refresh_trigger <- reactiveVal(0)
     
@@ -185,6 +187,44 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
         edit_callback(input$edit_goal)
       }
     })
+    
+    # Open modal to ask for confirmation before deleting goal
+    observeEvent(input$delete_goal, {
+      goal_id <- input$delete_goal
+      
+      showModal(
+        modalDialog(
+          title = "Confirm Deletion",
+          "⚠️ Are you sure you want to delete this goal? This action cannot be undone.",
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton(
+              ns("confirm_delete"),
+              "Delete",
+              class = "btn-danger"
+            )
+          ),
+          easyClose = TRUE
+        )
+      )
+      
+      observeEvent(input$confirm_delete, {
+        removeModal()
+        
+        tryCatch({
+          delete_goal(conn, goal_id)
+          refresh()
+          showNotification("Goal deleted successfully", type = "message")
+          
+        }, error = function(e) {
+          showNotification("Failed deleting goal", type = "error")
+        })
+        
+      }, once = TRUE, ignoreInit = TRUE)
+    })
+
+    
+    
     refresh <- function() {
       refresh_trigger(refresh_trigger() + 1)
     }

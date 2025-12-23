@@ -331,7 +331,7 @@ modalFormServer <- function(id, conn, refresh) {
         
       }, error = function(e) {
         print(paste("Error loading goal:", e$message))
-        showNotification(paste("Error loading goal:", e$message), type = "error")
+        showNotification("Failed loading goal", type = "error")
       })
     }
  
