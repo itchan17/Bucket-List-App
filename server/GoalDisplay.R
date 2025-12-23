@@ -36,6 +36,8 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
       })
     })
     
+    selectedGoalId <- reactiveVal(NULL)
+    
     # This displays the list  of goals
     output$display_goal_list <- renderUI({
       ns <- session$ns  
@@ -70,8 +72,12 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
           
           div(
             onclick = click_goal,
-            class = "px-6 py-4 cursor-pointer hover:bg-[#DDBA7D] transform-all duration-300 
-              active:scale-95 rounded flex justify-between",
+            class = paste("px-6 py-4 cursor-pointer hover:bg-[#DDBA7D] transform-all duration-300 
+              active:scale-95 rounded flex justify-between", 
+                          if (identical(selectedGoalId(), row$goal_id))
+                          "bg-[#DDBA7D]"
+                          else
+                          ""),
             span(
               row$title,
               class = "text-3xl "
@@ -101,7 +107,7 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
       selectedGoalId(input$clicked_goal)
     })
     
-    selectedGoalId <- reactiveVal(NULL)
+   
     
     # Display the details of the goal
     output$display_goal_details <- renderUI({
