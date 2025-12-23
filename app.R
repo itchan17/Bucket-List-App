@@ -7,6 +7,8 @@ source("server/database.R")
 source("server/db_queries.R")
 source("server/ModalFormServer.R")
 source("server/GoalDisplay.R")
+source("server/ProgressServer.R")
+
 
 options(shiny.autoreload = TRUE)
 
@@ -27,7 +29,8 @@ ui <- fillPage(
     ),
     
     mainLayout(list_goals = goalDisplayUI("goalDisplay"),
-               display_details = goalDetailsDisplay("goalDisplay")
+               display_details = goalDetailsDisplay("goalDisplay"),
+               display_progress = progressDisplayUI("progressDisplay")
                ),
     
     modalFormUI("goalModal")
@@ -35,9 +38,14 @@ ui <- fillPage(
 
 server <- function(input, output, session) {
   
+  progress_functions <- progressServer("progressDisplay", conn)
+  
   modal_functions <- modalFormServer("goalModal", conn, refresh = goal_functions$refresh)
   
-  goal_functions <- goalDisplayServer("goalDisplay", conn, edit_callback = modal_functions$load_goal)
+  goal_functions <- goalDisplayServer("goalDisplay", 
+                                      conn, 
+                                      edit_callback = modal_functions$load_goal, 
+                                      progress_refresh = progress_functions$refresh)
 }
 
 # Run the application 

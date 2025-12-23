@@ -16,7 +16,7 @@ goalDetailsDisplay <- function(id) {
 }
 
 # Backend logic for displaying data
-goalDisplayServer <- function(id, conn, edit_callback = NULL) {
+goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh = NULL) {
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
@@ -257,6 +257,8 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
         # Update the is_completed status of the goal
         # Check if all step was done
         update_goal_status(conn, step$goal_id)
+        
+        progress_refresh()
         
       }, error = function(e) {
         print(paste("Error updating step:", e$message))

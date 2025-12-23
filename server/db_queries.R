@@ -136,3 +136,44 @@ update_goal_status <- function(conn, goal_id) {
   
   dbExecute(conn, query, params = list(goal_id))
 }
+
+calculate_xp <- function(conn) {
+  query <- "
+    SELECT
+      g.goal_id,
+      
+      -- XP from steps
+      COALESCE(SUM(CASE WHEN s.is_done THEN 2 ELSE 0 END), 0) AS step_xp,
+      
+      -- XP from goal completion
+      MAX(
+        CASE 
+          WHEN g.is_completed AND g.difficulty = 'Simple Steps' THEN 10
+          WHEN g.is_completed AND g.difficulty = 'Challenge Quests' THEN 30
+          WHEN g.is_completed AND g.difficulty = 'Epic Achievements' THEN 50
+          ELSE 0
+        END
+      ) AS goal_xp,
+      
+      -- Total XP
+      (COALESCE(SUM(CASE WHEN s.is_done THEN 2 ELSE 0 END), 0) +
+       MAX(
+         CASE 
+           WHEN g.is_completed AND g.difficulty = 'Simple Steps' THEN 10
+           WHEN g.is_completed AND g.difficulty = 'Challenge Quests' THEN 30
+           WHEN g.is_completed AND g.difficulty = 'Epic Achievements' THEN 50
+           ELSE 0
+         END
+       )
+      ) AS total_xp
+    
+    FROM goals g
+    LEFT JOIN steps s ON s.goal_id = g.goal_id
+    GROUP BY g.goal_id, g.is_completed, g.difficulty
+    ORDER BY g.goal_id;
+  "
+  
+  data <- dbGetQuery(conn, query)
+  
+  return(data)
+}
