@@ -108,6 +108,7 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
     })
     
    
+    steps <- reactiveVal()
     
     # Display the details of the goal
     output$display_goal_details <- renderUI({
@@ -118,7 +119,7 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
         category  <- ""
         difficulty  <- ""
         
-        steps      <- data.frame()
+        steps(data.frame())
       } else {
         
         # Get the goal data from the existing data
@@ -128,13 +129,18 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
         difficulty  <- goalData$difficulty
         
         # Get the steps from the database
-        steps <-  tryCatch({
-          get_all_goal_steps(conn, goalData$goal_id)
-        }, error = function(e) {
-          print(paste("DATABASE ERROR:", e$message))
-          data.frame() # return empty df on error
-        })
+        steps(
+            tryCatch({
+            get_all_goal_steps(conn, goalData$goal_id)
+          }, error = function(e) {
+            print(paste("DATABASE ERROR:", e$message))
+            data.frame() # return empty df on error
+          })
+        )
       }
+      
+      steps_data <- steps()
+    
       
       # Display the details
       tagList(
@@ -161,16 +167,26 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
             class = "w-full shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded-lg p-5 flex-1 flex flex-col overflow-y-auto ",
             
             # List the steps
-            if (nrow(steps) > 0) {
-              lapply(1:nrow(steps), function(i) {
-                row <- steps[i, ]
+            if (nrow(steps_data) > 0) {
+              lapply(1:nrow(steps_data), function(i) {
+                row <- steps_data[i, ]
+          
+                checked_step <- sprintf(
+                  "Shiny.setInputValue('%s', %d, {priority: 'event'})", 
+                  ns("checked_step"), 
+                  row$step_id 
+                )
+                
+                
                 div(
                   class = "flex items-end space-x-5
                 px-6 py-4 hover:bg-[#DDBA7D] transform-all duration-300 rounded",
                   
                   tags$input(
                     type = "checkbox",
-                    class = "w-9 h-9 accent-[#CF4B00]"
+                    class = "w-9 h-9 accent-[#CF4B00]",
+                    checked = if (row$is_done) "checked" else NULL,
+                    onclick = checked_step
                   ),
                   
                   span(
@@ -228,6 +244,26 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL) {
         
       }, once = TRUE, ignoreInit = TRUE)
     })
+    
+    observeEvent(input$checked_step, {
+      step_id <- input$checked_step
+     
+      step <- steps()[steps()$step_id == step_id, ]
+      
+      tryCatch({
+        # Update the is_done status of the step
+        update_step_status(conn, step$step_id)
+        
+        # Update the is_completed status of the goal
+        # Check if all step was done
+        update_goal_status(conn, step$goal_id)
+        
+      }, error = function(e) {
+        print(paste("Error updating step:", e$message))
+        showNotification("Failed updating step", type = "error")
+      })
+    })
+    
 
     
     

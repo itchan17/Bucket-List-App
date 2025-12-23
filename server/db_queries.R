@@ -44,7 +44,7 @@ get_all_goals <- function(conn)  {
 # Get all the steps of the goal
 get_all_goal_steps <- function(conn, goal_id) {
   query <- "
-        SELECT step_id, title FROM steps WHERE goal_id = $1 ORDER BY updated_at ASC
+        SELECT step_id, title, is_done, goal_id FROM steps WHERE goal_id = $1 ORDER BY updated_at ASC
       "
   
   steps <- dbGetQuery(conn, query,  params = list(goal_id))
@@ -78,7 +78,9 @@ update_goal <- function(conn, goal_id, title, category, difficulty) {
 
 update_step <- function(conn, step, step_id) {
   query <- "UPDATE steps 
-            SET title = $1, updated_at = CURRENT_TIMESTAMP 
+            SET title = $1, 
+            is_done = FALSE, 
+            updated_at = CURRENT_TIMESTAMP 
             WHERE step_id = $2"
   
   dbExecute(conn, query, params = list(step, step_id))
@@ -104,6 +106,33 @@ delete_single_step <- function(conn, step_id) {
 
 delete_goal <- function(conn, goal_id) {
   query <- "DELETE FROM goals WHERE goal_id = $1"
+  
+  dbExecute(conn, query, params = list(goal_id))
+}
+
+update_step_status <- function(conn, step_id) {
+  query <- "
+    UPDATE steps
+    SET is_done = NOT is_done
+    WHERE step_id = $1
+  "
+  
+  dbExecute(conn, query, params = list(step_id))
+}
+
+update_goal_status <- function(conn, goal_id) {
+  query <- "
+    UPDATE goals g
+    SET is_completed = COALESCE(
+      (
+        SELECT BOOL_AND(is_done)
+        FROM steps
+        WHERE goal_id = g.goal_id
+      ),
+      FALSE
+    )
+    WHERE g.goal_id = $1
+  "
   
   dbExecute(conn, query, params = list(goal_id))
 }
