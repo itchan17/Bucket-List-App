@@ -157,7 +157,7 @@ progressServer <- function(id, conn) {
         
         
         div(
-          class = "flex flex-col h-full justify-center items-center",
+          class = "flex flex-col h-full items-center",
         
             
           # Badge image

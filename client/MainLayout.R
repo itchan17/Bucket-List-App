@@ -1,6 +1,7 @@
 library(shiny)
 
-mainLayout <- function(list_goals, display_details, display_progress) {
+mainLayout <- function(id, list_goals, display_details, goalButtons, display_progress) {
+  ns <- NS(id) 
   # Main
   div(
     class = "h-screen flex justify-center items-center p-8",
@@ -25,12 +26,7 @@ mainLayout <- function(list_goals, display_details, display_progress) {
               rounded active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]",
             onCLick =  "openModal()"
           ),
-          div(class = "flex gap-10",
-              tags$button("Active", class = "px-8 py-3 border text-3xl shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded
-                            active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]"),
-              tags$button("Achievements", class = "px-8 py-3 border text-3xl shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded
-                            active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]")
-          )
+          goalButtons
         ),
         h1("Bucket List", class = "text-4xl font-bold mb-3" ),
         # Goals container 

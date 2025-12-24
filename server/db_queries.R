@@ -32,9 +32,18 @@ insert_steps <- function (conn, goal_id,  steps) {
 }
 
 # Handles getting all the goals
-get_all_goals <- function(conn)  {
+get_all_active_goals <- function(conn)  {
   query <- "
-        SELECT * FROM goals ORDER BY goal_id DESC
+        SELECT * FROM goals WHERE is_completed = FALSE ORDER BY goal_id DESC 
+      "
+  goals = dbGetQuery(conn, query)
+  
+  return(goals)
+}
+
+get_all_achievements <- function(conn)  {
+  query <- "
+        SELECT * FROM goals WHERE is_completed = TRUE ORDER BY goal_id DESC 
       "
   goals = dbGetQuery(conn, query)
   

@@ -28,8 +28,11 @@ ui <- fillPage(
       modalFormJS()
     ),
     
-    mainLayout(list_goals = goalDisplayUI("goalDisplay"),
+    mainLayout(
+               "goalDisplay",
+               list_goals = goalDisplayUI("goalDisplay"),
                display_details = goalDetailsDisplay("goalDisplay"),
+               goalButtons = goalButtons("goalDisplay"),
                display_progress = progressDisplayUI("progressDisplay")
                ),
     

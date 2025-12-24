@@ -15,6 +15,13 @@ goalDetailsDisplay <- function(id) {
            class = "row-span-4 flex flex-col col-span-2 md:col-span-1 h-full") 
 }
 
+goalButtons <- function(id) {
+  ns <- NS(id)
+  
+  # This displays the list of goals
+  uiOutput(ns("buttons")) 
+}
+
 # Backend logic for displaying data
 goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh = NULL) {
   moduleServer(id, function(input, output, session) {
@@ -29,7 +36,11 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
       
       # wrapper to prevent errors if connection fails
       tryCatch({
-        get_all_goals(conn)
+        if(activeButton() == "active") {
+          get_all_active_goals(conn)
+        } else {
+          get_all_achievements(conn)
+        }
       }, error = function(e) {
         print(paste("DATABASE ERROR:", e$message))
         data.frame() # return empty df on error
@@ -37,6 +48,8 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
     })
     
     selectedGoalId <- reactiveVal(NULL)
+    
+    activeButton <- reactiveVal("active")
     
     # This displays the list  of goals
     output$display_goal_list <- renderUI({
@@ -82,21 +95,23 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
               row$title,
               class = "text-3xl "
             ),
-            div(
-              class = "flex gap-5",
-              # Edit button
-              tags$button(
-                icon("fa-solid fa-pen-to-square", class = "text-[#CF4B00] text-4xl"),
-                class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
-                onclick = edit_goal
-              ),
-              # Delete button
-              tags$button(
-                icon("fa-solid fa-x", class = "text-[#CF4B00] text-4xl"),
-                class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
-                onclick = delete_goal
+            if(activeButton() == "active") {
+              div(
+                class = "flex gap-5",
+                # Edit button
+                tags$button(
+                  icon("fa-solid fa-pen-to-square", class = "text-[#CF4B00] text-4xl"),
+                  class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
+                  onclick = edit_goal
+                ),
+                # Delete button
+                tags$button(
+                  icon("fa-solid fa-x", class = "text-[#CF4B00] text-4xl"),
+                  class = "bg-transparent border-0 cursor-pointer hover:opacity-70",
+                  onclick = delete_goal
+                )
               )
-            )
+            }
           )
         })
       )
@@ -186,7 +201,8 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
                     type = "checkbox",
                     class = "w-9 h-9 accent-[#CF4B00]",
                     checked = if (row$is_done) "checked" else NULL,
-                    onclick = checked_step
+                    onclick = checked_step,
+                    disabled = if (activeButton() == "achievements") TRUE else NULL
                   ),
                   
                   span(
@@ -261,12 +277,59 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
         update_goal_status(conn, step$goal_id)
         
         progress_refresh()
+        refresh()
         
       }, error = function(e) {
         print(paste("Error updating step:", e$message))
         showNotification("Failed updating step", type = "error")
       })
     })
+    
+    output$buttons <- renderUI({
+      
+      div(class = "flex gap-10",
+          actionButton(
+            ns("active_btn"), 
+            "Active", 
+            class = paste(
+              "px-8 py-3 border text-3xl shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded
+     active:scale-95 transition-all duration-150 text-white font-bold hover:bg-[#DDBA7D]",
+              ifelse(
+                activeButton() == "active",
+                "bg-[#CF4B00]",   # active style
+                "bg-[#DDBA7D]"    # inactive style
+              )
+            )
+          ),
+          
+          actionButton(
+            ns("achievements_btn"), 
+            "Achievements", 
+            class = paste(
+              "px-8 py-3 border text-3xl shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded
+     active:scale-95 transition-all duration-150 text-white font-bold hover:bg-[#DDBA7D]",
+              ifelse(
+                activeButton() == "achievements",
+                "bg-[#CF4B00]",   # active style
+                "bg-[#DDBA7D]"    # inactive style
+              )
+            )
+          )
+          
+      )
+    })
+    
+    
+    observeEvent(input$active_btn, {
+      activeButton("active")
+      print("Active Clicked")
+    })
+    
+    observeEvent(input$achievements_btn, {
+      activeButton("achievements")
+      print("Achievements Clicked")
+    })
+    
     
 
     
