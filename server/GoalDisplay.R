@@ -238,6 +238,8 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
           refresh()
           showNotification("Goal deleted successfully", type = "message")
           
+          progress_refresh()
+          
         }, error = function(e) {
           showNotification("Failed deleting goal", type = "error")
         })

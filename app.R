@@ -40,7 +40,10 @@ server <- function(input, output, session) {
   
   progress_functions <- progressServer("progressDisplay", conn)
   
-  modal_functions <- modalFormServer("goalModal", conn, refresh = goal_functions$refresh)
+  modal_functions <- modalFormServer("goalModal", 
+                                     conn, 
+                                     refresh = goal_functions$refresh,
+                                     progress_refresh = progress_functions$refresh)
   
   goal_functions <- goalDisplayServer("goalDisplay", 
                                       conn, 

@@ -1,4 +1,4 @@
-modalFormServer <- function(id, conn, refresh) {
+modalFormServer <- function(id, conn, refresh, progress_refresh = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -78,6 +78,8 @@ modalFormServer <- function(id, conn, refresh) {
              
               current_steps = get_all_goal_steps(conn,  goal_id)
               editingSteps(current_steps)
+              
+              progress_refresh()
               
             }, error = function(e) {
               print(paste("Error updating step:", e$message))
@@ -203,6 +205,7 @@ modalFormServer <- function(id, conn, refresh) {
             
             current_steps = get_all_goal_steps(conn,  goalIdToUpdate())
             editingSteps(current_steps)
+            progress_refresh()
             
           }, error = function(e) {
             print(paste("Error deleting step:", e$message))
