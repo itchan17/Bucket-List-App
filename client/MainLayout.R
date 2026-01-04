@@ -4,8 +4,8 @@ mainLayout <- function(id, list_goals, display_details, goalButtons, display_pro
   ns <- NS(id) 
   # Main
   div(
-    class = "h-screen flex justify-center items-center p-8",
-
+    class = "h-screen flex justify-center items-start p-8",
+    
     div(
       class = "w-full lg:max-w-[1200px] h-full shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded-lg  
         p-10 grid grid-cols-2 auto-rows-fr gap-10 bg-[#FCF6D9]",
@@ -40,11 +40,21 @@ mainLayout <- function(id, list_goals, display_details, goalButtons, display_pro
       
       # Details container
       
-      display_details
+      display_details,
      
       # Details container ---END---
       
     ), # Bucket List Container ---END---
+    
+    div(
+      class = "pl-10",
+      actionButton(
+        ns("logout_btn"),
+        "Logout",
+        class = "border-2 border-black rounded shadow-[2px_2px_0px_2px_rgba(0,_0,_0,_0.8)]
+          active:scale-95 transition-all duration-150 bg-[#CF4B00] text-white font-bold hover:bg-[#DDBA7D]"
+      )
+    )
     
   ) # Main ---END---
 }

@@ -330,7 +330,9 @@ goalDisplayServer <- function(id, conn, edit_callback = NULL, progress_refresh =
       print("Achievements Clicked")
     })
     
-    
+    observeEvent(input$logout_btn, {
+      runjs("localStorage.removeItem('loggedIn'); location.reload();")
+    })
 
     
     
