@@ -10,11 +10,15 @@ source("server/ModalFormServer.R")
 source("server/GoalDisplay.R")
 source("server/ProgressServer.R")
 source("server/LoginServer.R")
+source("server/initialize_db.R")
 
 
 options(shiny.autoreload = TRUE)
 
 conn <- create_connection()
+
+
+initialize_database(conn)
 
 # Define UI for application 
 ui <- fillPage(
