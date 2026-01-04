@@ -3,7 +3,6 @@ library(RPostgres)
 library(dotenv)
 
 # Load environment variables from .env file
-load_dot_env()
 
 create_connection <- function() {
   tryCatch({
