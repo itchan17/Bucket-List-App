@@ -4,6 +4,7 @@ library(shinyjs)
 source("client/LoginPage.R")
 source("client/ModalForm.R")
 source("client/MainLayout.R")
+source("client/ProfileModal.R")
 source("server/database.R")
 source("server/db_queries.R")
 source("server/ModalFormServer.R")
@@ -11,7 +12,6 @@ source("server/GoalDisplay.R")
 source("server/ProgressServer.R")
 source("server/LoginServer.R")
 source("server/initialize_db.R")
-
 
 options(shiny.autoreload = TRUE)
 
@@ -31,6 +31,16 @@ ui <- fillPage(
       # Tailwind CDN
       tags$script(src = "https://cdn.tailwindcss.com"),
       
+      tags$style(HTML("
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        .float { 
+          animation: float 3s ease-in-out infinite; 
+        }
+      ")),
+      
       # Check localStorage on page load
       tags$script(HTML("
         $(document).on('shiny:connected', function() {
@@ -40,7 +50,8 @@ ui <- fillPage(
         });
       ")),
       
-      modalFormJS()
+      modalFormJS(),
+      profileModalFormJS()
     ),
     
     uiOutput("dynamic_page")
@@ -63,7 +74,9 @@ server <- function(input, output, session) {
           goalButtons = goalButtons("goalDisplay"),
           display_progress = progressDisplayUI("progressDisplay")
         ),
-        modalFormUI("goalModal")
+        modalFormUI("goalModal"),
+        profileModalUI("progressDisplay", profile_details = profileDisplayDetailsUI("progressDisplay"))
+        
       )
     } else {
       # Show login page when not logged in

@@ -186,3 +186,59 @@ calculate_xp <- function(conn) {
   
   return(data)
 }
+
+ upload_profile_image <- function (conn, file_name, file_path) {
+   
+   query  <- "
+     INSERT INTO profile_images(profile_image_id, file_name, file_path)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (profile_image_id)
+     DO UPDATE SET
+      file_name = EXCLUDED.file_name,
+      file_path = EXCLUDED.file_path,
+      updated_at = NOW()
+     RETURNING file_path
+   "
+   
+   result <- dbGetQuery(conn, query, params = list(
+     TRUE,
+     file_name,
+     file_path
+   ))
+   
+   return(result$file_path)
+ }
+ 
+ get_profile_image <- function (conn) {
+   query  <- "
+    SELECT file_path FROM profile_images
+    WHERE profile_image_id = $1
+    LIMIT 1
+   "
+  
+   result <- dbGetQuery(conn, query,  params = list(TRUE))
+   
+   return(result$file_path[1])
+ }
+ 
+ get_profile_details <-  function (conn) {
+   query <- "
+     SELECT
+     
+       COUNT(DISTINCT g.goal_id) FILTER (WHERE is_completed = true) AS goals_count, 
+       COUNT(DISTINCT g.goal_id) FILTER (WHERE difficulty = 'Simple Steps' AND is_completed = true) AS simple_steps_count,
+       COUNT(DISTINCT g.goal_id) FILTER (WHERE difficulty = 'Challenge Quests' AND is_completed = true) AS challenge_quests_count,
+       COUNT(DISTINCT g.goal_id) FILTER (WHERE difficulty = 'Epic Achievements' AND is_completed = true) AS epic_achievements_count,
+       COUNT(s.step_id) FILTER (WHERE is_done = true) AS steps_count
+       
+     FROM goals g
+     LEFT JOIN steps s ON s.goal_id = g.goal_id
+   "
+   
+   data <- dbGetQuery(conn, query)
+   
+   print(data)
+   
+   return(data)
+ }
+ 

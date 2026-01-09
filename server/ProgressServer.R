@@ -4,7 +4,15 @@ progressDisplayUI <- function(id) {
   
   # This displays the progress
   uiOutput(ns("display_progress"),
-           class = "shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded-lg col-span-2 row-span-1 flex items-center p-20 h-full")  
+     
+                 class = "shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] rounded-lg col-span-2 row-span-1 flex items-center px-20 py-10 h-full space-x-10")  
+}
+
+profileDisplayDetailsUI <- function(id) {
+  ns <- NS(id)
+  
+  # This displays the progress
+  uiOutput(ns("display_profile_details"))  
 }
 
 progressServer <- function(id, conn) {
@@ -22,6 +30,9 @@ progressServer <- function(id, conn) {
       current_xp = 0
     )
     
+    profileImagePath <- reactiveVal(get_profile_image(conn))
+    
+    
     output$display_progress <- renderUI({
       
       refresh_trigger()
@@ -33,20 +44,51 @@ progressServer <- function(id, conn) {
       progress_details <- set_progress_details(current_xp) 
       
       tagList(
-       
+          
+        # File input for profile image
+        tags$div(
+          class = "absolute w-0 h-0 overflow-hidden opacity-0",
+          fileInput(
+            inputId = ns("profile_upload"),
+            label = NULL, 
+            accept = "image/*"
+          )
+        ),
+        
+        # Profile image
+        div(
+          class = "relative w-[80px] h-[80px] rounded-lg shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] shrink-0 cursor-pointer active:scale-95",
+          onclick = "openProfileModal()",
           
           tags$img(
-            src = progress_details$badge,   
-            alt = progress_details$level,
-            class = "w-80 h-40 rounded-full"  
+            src = profileImagePath(),
+            alt = "Profile Image",
+            class = "w-full h-full object-cover"
           ),
           
-          
+          tags$label(
+            `for` = ns("profile_upload"),
+            class = "absolute -top-3 -right-5 w-[30px] h-[30px] bg-[#CF4B00] rounded-full border-0 cursor-pointer active:scale-95 flex items-center justify-center",
+            onclick = "event.stopPropagation();",
+            tags$i(class = "fa-solid fa-pencil text-[#FCF6D9] text-lg")
+          )
+        ),
+        
+      
+        
           div(
             class = "w-full",
-            h1(progress_details$level,
-               class = "text-5xl font-bold mb-5"
-            ),
+             div(
+               class = "flex items-center",
+               tags$img(
+                 src = progress_details$badge,
+                 alt = progress_details$level,
+                 class = "w-[130px] h-[70px] rounded-full shrink-0"
+               ),
+               h1(progress_details$level,
+                  class = "text-5xl font-bold mb-5"
+               ),
+             ),
             div(
               class = "w-full bg-[#DDBA7D] relative",
               span(
@@ -61,6 +103,146 @@ progressServer <- function(id, conn) {
           )
       )
     })  
+    
+    # Function that display the details of the profile
+    output$display_profile_details <- renderUI({
+      
+      refresh_trigger()
+      
+      xp_data <- calculate_xp(conn)
+      
+      current_xp <- sum(xp_data$total_xp)
+      
+      progress_details <- set_progress_details(current_xp) 
+      
+      data <- get_profile_details(conn)
+      
+      tagList(
+        div(
+          class = "flex space-x-20",
+          
+          # Profile image
+          div(
+            class = " w-[160px] h-[160px] rounded-lg shadow-[2px_2px_0px_5px_rgba(0,_0,_0,_0.8)] shrink-0",
+            onclick = "openProfileModal()",
+            
+            tags$img(
+              src = profileImagePath(),
+              alt = "Profile Image",
+              class = "w-full h-full object-cover"
+            ),
+          ),
+          
+          # Details
+          div(
+            class = "flex space-x-20",
+            
+            # First column
+            div(
+              class = "space-y-3",
+              div(
+                class = "flex items-center space-x-5",
+                tags$i(class = "fa-solid fa-trophy text-blue-600 text-5xl"),
+                div(
+                  h1(
+                    class = "text-2xl font-bold",
+                    "Total Goals",
+                    tags$i(class = "fa-solid fa-check text-green-600 text-2xl")
+                  ),
+                  span(
+                    class = "text-4xl font-black",
+                    data$goals_count
+                  )
+                )
+              ),
+              div(
+                class = "flex items-center space-x-5",
+                tags$i(class = "fa-solid fa-medal text-red-600 text-5xl"),
+                div(
+                  h1(
+                    class = "text-2xl font-bold",
+                    "Total Steps",
+                    tags$i(class = "fa-solid fa-check text-green-600 text-2xl")
+                  ),
+                  span(
+                    class = "text-4xl font-black",
+                    data$steps_count
+                  )
+                )
+              )
+              
+            ),
+            
+            # Second column
+            div(
+              class = "space-y-3",
+              
+              div(
+                class = "flex items-center space-x-5",
+                tags$i(class = "fa-solid fa-square text-[#CD7F32] text-5xl"),
+                div(
+                  h1(
+                    class = "text-2xl font-bold",
+                    "Simple Steps",
+                    tags$i(class = "fa-solid fa-check text-green-600 text-2xl")
+                  ),
+                  span(
+                    class = "text-4xl font-black",
+                    data$simple_steps_count
+                  )
+                ),
+              ),
+              
+              div(
+                class = "flex items-center space-x-5",
+                tags$i(class = "fa-solid fa-diamond text-[#C0C0C0] text-5xl"),
+                div(
+                  h1(
+                    class = "text-2xl font-bold",
+                    "Challenge Quests",
+                    tags$i(class = "fa-solid fa-check text-green-600 text-2xl")
+                  ),
+                  span(
+                    class = "text-4xl font-black",
+                    data$challenge_quests_count
+                  )
+                ),
+              ),
+              
+              div(
+                class = "flex items-center space-x-5",
+                tags$i(class = "fa-solid fa-star text-[#FFD700] text-5xl"),
+                div(
+                  h1(
+                    class = "text-2xl font-bold",
+                    "Epic Achievements",
+                    tags$i(class = "fa-solid fa-check text-green-600 text-2xl")
+                  ),
+                  span(
+                    class = "text-4xl font-black",
+                    data$epic_achievements_count
+                  )
+                )
+              )
+              
+            ),
+          ),
+        ),
+        # Badge
+        div(
+          class = "flex flex-col justify-center items-center w-full",
+          tags$img(
+            src = progress_details$badge,
+            alt = progress_details$level,
+            class = "w-160 h-160 rounded-full shrink-0 float",
+          ),
+          h1(progress_details$level,
+             class = "text-6xl font-black italic mb-5"
+          ),
+        ),
+       
+      )
+    }) 
     
     
     set_progress_details <- function(current_xp) {
@@ -203,6 +385,33 @@ progressServer <- function(id, conn) {
       
       removeUI(selector = "#levelup-overlay")
       
+    })
+    
+    
+    data_file <- eventReactive(input$profile_upload, {
+      req(input$profile_upload) # Ensure a file is actually uploaded
+      
+    
+    })
+    
+    observeEvent(input$profile_upload, {
+       req(input$profile_upload)
+      
+       file_data <- input$profile_upload
+      
+       file_path <- paste0("images/profile_images/", file_data$name)
+       file_name <- file_data$name
+       
+      # Example: save permanently
+       file.copy(
+         from = file_data$datapath,
+         to = file.path("www/images/profile_images", file_data$name),
+         overwrite = TRUE
+       )
+    
+       profileImageData <- upload_profile_image(conn, file_name, file_path)
+       
+       profileImagePath(profileImageData)
     })
     
     

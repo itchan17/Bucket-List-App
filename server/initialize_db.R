@@ -31,6 +31,17 @@ initialize_database <- function(conn) {
     )
   ")
   
+  # Create profile_images table to store uploaded profile images details
+  DBI::dbExecute(conn, "
+      CREATE TABLE IF NOT EXISTS profile_images (
+      profile_image_id BOOLEAN PRIMARY KEY DEFAULT TRUE,
+      file_name TEXT NOT NULL,
+      file_path TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  ")
+  
   
   message("Database initialized successfully!")
 }
